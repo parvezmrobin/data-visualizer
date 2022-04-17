@@ -1,0 +1,24 @@
+{
+  "root": true,
+  "env": {
+    "browser": true
+  },
+  "extends": [
+    "plugin:vue/recommended",
+    "plugin:prettier/recommended",
+    "eslint:recommended"
+  ],
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "sourceType": "module"
+  },
+  "rules": {
+    "vue/no-multiple-template-root": "off",
+    "prettier/prettier": [
+      "error", {
+        "singleQuote": true
+      }
+    ]
+  }
+}
