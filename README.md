@@ -26,3 +26,7 @@ yarn serve
 ```
 
 It will run the app on http://localhost:3000.
+
+## Just Like This
+
+![image](https://user-images.githubusercontent.com/13452649/163719271-749cb63c-4c14-445e-b588-c9a34910780e.png)
