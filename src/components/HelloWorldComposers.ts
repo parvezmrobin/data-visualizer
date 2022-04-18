@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { computed, ComputedRef, onBeforeMount, Ref, ref, watch } from 'vue';
+import { computed, onBeforeMount, Ref, ref, watch } from 'vue';
 
 export function useFileSystem() {
   const dirNames = ref<string[]>([]);
@@ -46,43 +46,57 @@ export function useFileSystem() {
 }
 
 export function useFiltering(
-  selectedFileName: Ref<string>,
-  fileContent: Ref<string[][]>
+  fileContent: Ref<string[][]>,
+  randomPickingInProgress: Ref<boolean>
 ) {
+  const filterFields = ref<string[]>([]);
   const selectedFilterField = ref<string>('');
-  watch(selectedFileName, () => {
-    selectedFilterField.value = '';
-  });
-  const filterFields = computed<string[]>(() => {
-    if (!fileContent.value.length) {
-      return [];
+  const selectedEntry = ref<string[]>([]);
+
+  watch(fileContent, () => {
+    if (randomPickingInProgress.value) {
+      return;
     }
 
-    return fileContent.value[0];
-  });
-
-  watch(filterFields, () => {
-    // clear filter value
-    selectedFilterValue.value = '';
+    // if random selection is NOT ongoing, reset filter-fields
+    if (!fileContent.value.length) {
+      filterFields.value = [];
+    } else if (
+      JSON.stringify(filterFields.value.sort()) !==
+      JSON.stringify(fileContent.value[0].sort())
+    ) {
+      // update only if the field-list is updated
+      filterFields.value = fileContent.value[0];
+      selectedFilterField.value = '';
+    }
   });
 
   const selectedFilterValue = ref<string>('');
+
   const filterValues = computed<string[]>(() => {
-    if (!fileContent.value.length) {
+    if (!fileContent.value.length || !selectedFilterField.value) {
       return [];
     }
     const fieldIndex = filterFields.value.indexOf(selectedFilterField.value);
-
     return fileContent.value.slice(1).map((row) => row[fieldIndex]);
   });
 
-  const selectedEntry = computed<string[]>(() => {
-    if (!fileContent.value.length) {
-      return [];
+  watch(filterValues, () => {
+    if (randomPickingInProgress.value) {
+      selectedFilterValue.value = getRandomValueFrom(filterValues.value);
+      randomPickingInProgress.value = false;
+    } else {
+      selectedFilterValue.value = '';
     }
+  });
 
-    const rowIndex = filterValues.value.indexOf(selectedFilterValue.value) + 1;
-    return fileContent.value[rowIndex];
+  watch(selectedFilterValue, () => {
+    if (!selectedFilterValue.value) {
+      selectedEntry.value = [];
+    } else {
+      const rowIndex = filterValues.value.indexOf(selectedFilterValue.value);
+      selectedEntry.value = fileContent.value[rowIndex + 1];
+    }
   });
 
   return {
@@ -94,7 +108,7 @@ export function useFiltering(
   };
 }
 
-export function useFieldVisibility(filterFields: ComputedRef<string[]>) {
+export function useFieldVisibility(filterFields: Ref<string[]>) {
   const visibleFields = ref<Record<string, boolean>>({});
   watch(filterFields, () => {
     // update visible field list
@@ -112,4 +126,10 @@ export function useFieldVisibility(filterFields: ComputedRef<string[]>) {
     visibleFields.value = newVisibleFields;
   });
   return { visibleFields };
+}
+
+export function getRandomValueFrom<T>(list: T[]): T {
+  const randomIndex = Math.floor(Math.random() * list.length);
+  const randomValue = list[randomIndex];
+  return randomValue;
 }

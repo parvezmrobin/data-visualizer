@@ -3,6 +3,7 @@ import hljs from 'highlight.js';
 import { nextTick, ref, watch } from 'vue';
 import VSelect from 'vue-select';
 import {
+  getRandomValueFrom,
   useFieldVisibility,
   useFileSystem,
   useFiltering,
@@ -11,18 +12,19 @@ import {
 const { dirNames, selectedDirname, filenames, selectedFilename, fileContent } =
   useFileSystem();
 
+const randomPickingInProgress = ref(false);
 const {
   selectedFilterField,
   filterFields,
   selectedFilterValue,
   filterValues,
   selectedEntry,
-} = useFiltering(selectedFilename, fileContent);
+} = useFiltering(fileContent, randomPickingInProgress);
 
 const { visibleFields } = useFieldVisibility(filterFields);
 
 const entryViewCount = ref<number>(0);
-watch(selectedFilename, () => {
+watch(selectedDirname, () => {
   entryViewCount.value = 0;
 });
 
@@ -40,10 +42,15 @@ watch([selectedEntry, visibleFields], async () => {
   hljs.highlightAll();
 });
 
+const pickFromRandomFile = ref(true);
+
 const pickRandomly = () => {
-  const randomIndex = Math.floor(Math.random() * filterValues.value.length);
-  const randomValue = filterValues.value[randomIndex];
-  selectedFilterValue.value = randomValue;
+  if (pickFromRandomFile.value) {
+    randomPickingInProgress.value = true;
+    selectedFilename.value = getRandomValueFrom(filenames.value);
+  } else {
+    selectedFilterValue.value = getRandomValueFrom(filterValues.value);
+  }
 };
 </script>
 
@@ -134,10 +141,22 @@ const pickRandomly = () => {
       </div>
     </div>
 
-    <div v-show="filterValues.length" class="row-cols-auto">
+    <div v-show="selectedEntry.length" class="row-cols-auto">
       <button class="btn btn-outline-info" @click="pickRandomly">
         Pick Randomly
       </button>
+
+      <div class="form-check form-check-inline mx-1">
+        <input
+          id="pick-from-random-file"
+          v-model="pickFromRandomFile"
+          class="form-check-input bg-info border-info"
+          type="checkbox"
+        />
+        <label class="form-check-label" for="pick-from-random-file">
+          From Random File
+        </label>
+      </div>
 
       <span class="badge bg-info mx-1">
         viewed {{ entryViewCount }}
@@ -145,7 +164,7 @@ const pickRandomly = () => {
       </span>
     </div>
 
-    <div v-show="filterFields.length">
+    <div v-if="selectedEntry.length">
       <table class="table">
         <thead>
           <tr>
@@ -181,7 +200,7 @@ const pickRandomly = () => {
                 <template v-else-if="field.endsWith('content')">
                   <pre><code class='language-python'>{{ selectedEntry[i] }}</code></pre>
                 </template>
-                <template v-else-if="selectedEntry[i].includes('{')">
+                <template v-else-if="selectedEntry[i]?.includes('{')">
                   <pre><code class='language-json'>{{selectedEntry[i]}}</code></pre>
                 </template>
                 <template v-else>
