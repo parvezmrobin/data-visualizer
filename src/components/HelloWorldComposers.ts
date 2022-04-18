@@ -25,6 +25,9 @@ export function useFileSystem() {
 
   const fileContent = ref<string[][]>([]);
   watch(selectedFilename, async () => {
+    if (!selectedFilename.value.length) {
+      return;
+    }
     const contentResp = await axios.get<string[][]>(
       `${location.origin.replace(/:(\d+)/, ':5000')}/${selectedDirname.value}/${
         selectedFilename.value
