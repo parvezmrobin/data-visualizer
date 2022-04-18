@@ -1,68 +1,33 @@
 <script setup lang="ts">
-import axios from 'axios';
 import hljs from 'highlight.js';
-import { computed, nextTick, onBeforeMount, ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import VSelect from 'vue-select';
+import {
+  useFieldVisibility,
+  useFileSystem,
+  useFiltering,
+} from './HelloWorldComposers';
 
-const dirNames = ref<string[]>([]);
-const filenames = ref<string[]>([]);
-const selectedDirname = ref<string>('');
-const selectedFilename = ref<string>('');
+const { dirNames, selectedDirname, filenames, selectedFilename, fileContent } =
+  useFileSystem();
+
+const {
+  selectedFilterField,
+  filterFields,
+  selectedFilterValue,
+  filterValues,
+  selectedEntry,
+} = useFiltering(selectedFilename, fileContent);
+
+const { visibleFields } = useFieldVisibility(filterFields);
 
 const entryViewCount = ref<number>(0);
-
-const fileContent = ref<string[][]>([]);
-
-const selectedFilterField = ref<string>('');
-const visibleFields = ref<Record<string, boolean>>({});
-const filterFields = computed<string[]>(() => {
-  if (!fileContent.value.length) {
-    return [];
-  }
-
-  return fileContent.value[0];
+watch(selectedFilename, () => {
+  entryViewCount.value = 0;
 });
-
-watch(filterFields, () => {
-  // clear filter value
-  selectedFilterValue.value = '';
-
-  // update visible field list
-  const newVisibleFields: Record<string, boolean> = {};
-  for (const filterField of filterFields.value) {
-    if (!(filterField in visibleFields.value)) {
-      // if this field is newly introduced, show it
-      newVisibleFields[filterField] = true;
-    } else {
-      // otherwise, keep previous settings
-      newVisibleFields[filterField] = visibleFields.value[filterField];
-    }
-  }
-
-  visibleFields.value = newVisibleFields;
-});
-
-const filterValues = computed<string[]>(() => {
-  if (!fileContent.value.length) {
-    return [];
-  }
-  const fieldIndex = filterFields.value.indexOf(selectedFilterField.value);
-
-  return fileContent.value.slice(1).map((row) => row[fieldIndex]);
-});
-const selectedFilterValue = ref<string>('');
 
 watch(selectedFilterValue, () => {
   entryViewCount.value++;
-});
-
-const selectedEntry = computed<string[]>(() => {
-  if (!fileContent.value.length) {
-    return [];
-  }
-
-  const rowIndex = filterValues.value.indexOf(selectedFilterValue.value) + 1;
-  return fileContent.value[rowIndex];
 });
 
 watch([selectedEntry, visibleFields], async () => {
@@ -73,34 +38,6 @@ watch([selectedEntry, visibleFields], async () => {
   await nextTick();
 
   hljs.highlightAll();
-});
-
-onBeforeMount(async () => {
-  const dirnameResp = await axios.get<string[]>(
-    `${location.origin.replace(/:(\d+)/, ':5000')}/directories`
-  );
-  dirNames.value = dirnameResp.data;
-});
-
-watch(selectedDirname, async () => {
-  const filenameResp = await axios.get<string[]>(
-    `${location.origin.replace(/:(\d+)/, ':5000')}/${
-      selectedDirname.value
-    }/files`
-  );
-  filenames.value = filenameResp.data;
-  selectedFilename.value = '';
-});
-
-watch(selectedFilename, async () => {
-  const contentResp = await axios.get<string[][]>(
-    `${location.origin.replace(/:(\d+)/, ':5000')}/${selectedDirname.value}/${
-      selectedFilename.value
-    }`
-  );
-  fileContent.value = contentResp.data;
-  selectedFilterField.value = '';
-  entryViewCount.value = 0;
 });
 
 const pickRandomly = () => {
