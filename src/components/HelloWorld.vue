@@ -9,6 +9,8 @@ const filenames = ref<string[]>([]);
 const selectedDirname = ref<string>('');
 const selectedFilename = ref<string>('');
 
+const entryViewCount = ref<number>(0);
+
 const fileContent = ref<string[][]>([]);
 
 const selectedFilterField = ref<string>('');
@@ -49,6 +51,10 @@ const filterValues = computed<string[]>(() => {
   return fileContent.value.slice(1).map((row) => row[fieldIndex]);
 });
 const selectedFilterValue = ref<string>('');
+
+watch(selectedFilterValue, () => {
+  entryViewCount.value++;
+});
 
 const selectedEntry = computed<string[]>(() => {
   if (!fileContent.value.length) {
@@ -94,6 +100,7 @@ watch(selectedFilename, async () => {
   );
   fileContent.value = contentResp.data;
   selectedFilterField.value = '';
+  entryViewCount.value = 0;
 });
 
 const pickRandomly = () => {
@@ -194,6 +201,11 @@ const pickRandomly = () => {
       <button class="btn btn-outline-info" @click="pickRandomly">
         Pick Randomly
       </button>
+
+      <span class="badge bg-info mx-1">
+        viewed {{ entryViewCount }}
+        {{ entryViewCount > 1 ? 'entries' : 'entry' }}
+      </span>
     </div>
 
     <div v-show="filterFields.length">
