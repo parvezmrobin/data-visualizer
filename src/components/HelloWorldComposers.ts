@@ -62,8 +62,8 @@ export function useFiltering(
     if (!fileContent.value.length) {
       filterFields.value = [];
     } else if (
-      JSON.stringify(filterFields.value.sort()) !==
-      JSON.stringify(fileContent.value[0].sort())
+      JSON.stringify(filterFields.value.slice(0).sort()) !==
+      JSON.stringify(fileContent.value[0].slice(0).sort())
     ) {
       // update only if the field-list is updated
       filterFields.value = fileContent.value[0];
