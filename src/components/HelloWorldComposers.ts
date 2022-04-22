@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { computed, onBeforeMount, Ref, ref, watch } from 'vue';
 
-export function useFileSystem(copyFilenameOnSelection = false) {
+export function useFileSystem(
+  randomPickingInProgress: Ref<boolean>,
+  copyFilenameOnSelection = false
+) {
   const dirNames = ref<string[]>([]);
   const selectedDirname = ref<string>('');
   onBeforeMount(async () => {
@@ -38,6 +41,13 @@ export function useFileSystem(copyFilenameOnSelection = false) {
         selectedFilename.value
       }`
     );
+    if (randomPickingInProgress.value && !contentResp.data[0].length) {
+      // if random picking in progress and file does not have any value,
+      // randomly select a new file
+      console.log('here');
+      selectedFilename.value = getRandomValueFrom(filenames.value);
+      return;
+    }
     fileContent.value = contentResp.data;
   });
 

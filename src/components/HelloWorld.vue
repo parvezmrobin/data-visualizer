@@ -9,10 +9,10 @@ import {
   useFiltering,
 } from './HelloWorldComposers';
 
-const { dirNames, selectedDirname, filenames, selectedFilename, fileContent } =
-  useFileSystem(true);
-
 const randomPickingInProgress = ref(false);
+const { dirNames, selectedDirname, filenames, selectedFilename, fileContent } =
+  useFileSystem(randomPickingInProgress, true);
+
 const {
   selectedFilterField,
   filterFields,
