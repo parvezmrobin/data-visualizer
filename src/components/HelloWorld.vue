@@ -10,7 +10,7 @@ import {
 } from './HelloWorldComposers';
 
 const { dirNames, selectedDirname, filenames, selectedFilename, fileContent } =
-  useFileSystem();
+  useFileSystem(true);
 
 const randomPickingInProgress = ref(false);
 const {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { computed, onBeforeMount, Ref, ref, watch } from 'vue';
 
-export function useFileSystem() {
+export function useFileSystem(copyFilenameOnSelection = false) {
   const dirNames = ref<string[]>([]);
   const selectedDirname = ref<string>('');
   onBeforeMount(async () => {
@@ -28,6 +28,11 @@ export function useFileSystem() {
     if (!selectedFilename.value.length) {
       return;
     }
+
+    if (copyFilenameOnSelection) {
+      await navigator.clipboard.writeText(selectedFilename.value);
+    }
+
     const contentResp = await axios.get<string[][]>(
       `${location.origin.replace(/:(\d+)/, ':5000')}/${selectedDirname.value}/${
         selectedFilename.value
