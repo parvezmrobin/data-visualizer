@@ -58,68 +58,43 @@ const pickRandomly = () => {
   <div class="container-fluid">
     <div class="row">
       <div class="col">
-        <div class="form-floating">
-          <select
-            id="dirname"
-            v-model="selectedDirname"
-            name="dirname"
-            class="form-control"
-          >
-            <option v-for="dirname in dirNames" :key="dirname" :value="dirname">
-              {{ dirname }}
-            </option>
-          </select>
-          <label for="dirname">Select Directory</label>
-        </div>
+        <label for="dirname" class="text-black-50">Select Directory</label>
+        <VSelect
+          id="dirname"
+          v-model="selectedDirname"
+          :options="dirNames"
+          :clearable="false"
+        />
       </div>
       <div class="col">
-        <div class="form-floating">
-          <select
-            id="filename"
-            v-model="selectedFilename"
-            name="filename"
-            class="form-control"
-          >
-            <option
-              v-for="filename in filenames"
-              :key="filename"
-              :value="filename"
-            >
-              {{ filename.replace('.', '/') }}
-            </option>
-          </select>
-          <label for="filename">Select File</label>
-        </div>
+        <label for="filename" class="text-black-50">Select File</label>
+        <VSelect
+          id="filename"
+          v-model="selectedFilename"
+          :options="filenames"
+          :clearable="false"
+          :get-option-label="(filename) => filename.replace('.', '/')"
+        />
       </div>
       <div class="col">
-        <div class="form-floating">
-          <select
-            id="field"
-            v-model="selectedFilterField"
-            name="field"
-            class="form-control"
-          >
-            <option
-              v-for="fieldName in filterFields"
-              :key="fieldName"
-              :value="fieldName"
-            >
-              {{ fieldName }}
-            </option>
-          </select>
-          <label for="field">Select Filter Field</label>
-        </div>
+        <label for="field" class="text-black-50">Select Filter Field</label>
+        <VSelect
+          id="field"
+          v-model="selectedFilterField"
+          :options="filterFields"
+          :clearable="false"
+        />
       </div>
       <div class="col">
-        <div class="form-floating">
-          <VSelect
-            id="field-value"
-            v-model="selectedFilterValue"
-            placeholder="Select Filter Value"
-            :options="filterValues"
-            :clearable="false"
-          />
-        </div>
+        <label for="field-value" class="text-black-50"
+          >Select Filter Value</label
+        >
+        <VSelect
+          id="field-value"
+          v-model="selectedFilterValue"
+          :options="filterValues"
+          :clearable="false"
+        />
       </div>
     </div>
 
