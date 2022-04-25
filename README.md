@@ -1,5 +1,10 @@
 # Data Visualizer
 
+While dealing with large CSV files to understand the quality of the data, it is painful in the table view of pandas or Excel.
+So, I build this data-visualizer app. 
+
+It shows one entry at a time with syntax highlighting. I can choose which columns to see and pick entries randomly to better understand the quality/distribution of the data.
+
 ## Install dependencies
 
 Install [node.js](https://nodejs.org/en/), [yarn](https://classic.yarnpkg.com/en/docs/install), [python](https://www.python.org/downloads/) ≥ 3.6, and [pip](https://pip.pypa.io/en/stable/installation/).
