@@ -1,8 +1,8 @@
-import csv
 import os
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from pandas.io.parsers.readers import read_csv
 
 app = Flask(__name__)
 CORS(app)
@@ -29,6 +29,9 @@ def get_filenames(directory: str):
 @app.route('/<directory>/<filename>')
 def get_file(directory: str, filename: str):
   filepath = os.path.join(DATASET_DIR, directory, filename)
-  with open(filepath, 'r', encoding='utf-8') as file:
-    content = csv.reader(file)
-    return jsonify(list(content))
+  df = read_csv(filepath, dtype=str)
+  list_of_rows = [
+    df.columns.tolist(),
+    *df.values.tolist(),
+  ]
+  return jsonify(list_of_rows)
