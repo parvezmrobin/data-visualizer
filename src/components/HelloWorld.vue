@@ -32,7 +32,7 @@ watch(selectedFilterValue, () => {
   entryViewCount.value++;
 });
 
-watch([selectedEntry, visibleFields], async () => {
+watch(selectedEntry, async () => {
   if (!selectedEntry.value.length) {
     return;
   }
@@ -41,6 +41,15 @@ watch([selectedEntry, visibleFields], async () => {
 
   hljs.highlightAll();
 });
+
+watch(
+  visibleFields,
+  async () => {
+    await nextTick();
+    hljs.highlightAll();
+  },
+  { deep: true }
+);
 
 const pickFromRandomFile = ref(true);
 
@@ -169,7 +178,9 @@ const pickRandomly = () => {
                     {{ selectedEntry[i] }}
                   </a>
                 </template>
-                <template v-else-if="field.endsWith('patch')">
+                <template
+                  v-else-if="field.endsWith('patch') || field.endsWith('input')"
+                >
                   <pre><code class='language-diff'>{{ selectedEntry[i] }}</code></pre>
                 </template>
                 <template v-else-if="field.endsWith('content')">
