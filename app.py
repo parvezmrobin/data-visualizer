@@ -29,7 +29,9 @@ def get_filenames(directory: str):
 @app.route('/<directory>/<filename>')
 def get_file(directory: str, filename: str):
   filepath = os.path.join(DATASET_DIR, directory, filename)
-  df = read_csv(filepath, dtype=str)
+  df = read_csv(filepath, dtype=str, keep_default_na=False)
+  if df[df.columns[0]].nunique() != len(df[df.columns[0]]) and 'index' not in df.columns:
+    df.insert(0, 'index', df.index.astype(str))
   list_of_rows = [
     df.columns.tolist(),
     *df.values.tolist(),
