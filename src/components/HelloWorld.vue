@@ -51,6 +51,17 @@ watch(
   { deep: true }
 );
 
+const isNumber = ref(false);
+const minimumFilter = ref(0);
+const maximumFilter = ref(0);
+
+watch(isNumber, async () => {
+  if (isNumber.value === pickFromRandomFile.value) {
+    await nextTick();
+    isNumber.value = !isNumber.value;
+  }
+});
+
 const pickFromRandomFile = ref(true);
 
 const pickRandomly = () => {
@@ -58,7 +69,18 @@ const pickRandomly = () => {
     randomPickingInProgress.value = true;
     selectedFilename.value = getRandomValueFrom(filenames.value);
   } else {
-    selectedFilterValue.value = getRandomValueFrom(filterValues.value);
+    let values: string[];
+    if (isNumber.value && minimumFilter.value && maximumFilter.value) {
+      values = filterValues.value
+        .map(Number.parseFloat)
+        .filter(
+          (val) => val >= minimumFilter.value && val <= maximumFilter.value
+        )
+        .map((val) => val.toString());
+    } else {
+      values = filterValues.value;
+    }
+    selectedFilterValue.value = getRandomValueFrom(values);
   }
 };
 </script>
@@ -134,12 +156,43 @@ const pickRandomly = () => {
         <input
           id="pick-from-random-file"
           v-model="pickFromRandomFile"
-          class="form-check-input bg-info border-info"
+          class="form-check-input border-info"
           type="checkbox"
         />
         <label class="form-check-label" for="pick-from-random-file">
           From Random File
         </label>
+      </div>
+
+      <div class="form-check form-check-inline mx-1">
+        <input
+          id="is-number"
+          v-model="isNumber"
+          name="is-number"
+          class="form-check-input border-info"
+          type="checkbox"
+        />
+        <label for="is-number" class="form-check-label">
+          With numeric condition
+        </label>
+      </div>
+
+      <div v-if="isNumber" class="d-inline-flex" style="width: 200px">
+        <div class="input-group input-group-sm">
+          <input
+            v-model="minimumFilter"
+            type="number"
+            class="form-control"
+            placeholder="Minimum"
+          />
+          <span class="input-group-text">≤ value ≤</span>
+          <input
+            v-model="maximumFilter"
+            type="number"
+            class="form-control"
+            placeholder="Maximum"
+          />
+        </div>
       </div>
 
       <span class="badge bg-info mx-1">
@@ -187,7 +240,7 @@ const pickRandomly = () => {
                   <pre><code class='language-python'>{{ selectedEntry[i] }}</code></pre>
                 </template>
                 <template v-else-if="selectedEntry[i]?.includes('{')">
-                  <pre><code class='language-json'>{{selectedEntry[i]}}</code></pre>
+                  <pre><code class='language-json'>{{ selectedEntry[i] }}</code></pre>
                 </template>
                 <template v-else>
                   {{ selectedEntry[i] }}
@@ -209,5 +262,9 @@ tr > :first-child {
 tr > :last-child {
   text-align: left;
   padding-left: 1em;
+}
+
+.form-check-input.border-info:checked {
+  background-color: var(--bs-info);
 }
 </style>
