@@ -7,10 +7,9 @@ export function useFileSystem(
 ) {
   const dirNames = ref<string[]>([]);
   const selectedDirname = ref<string>('');
+  let origin = location.origin.replace(/:(\d+)/, ':5000');
   onBeforeMount(async () => {
-    const dirnameResp = await axios.get<string[]>(
-      `${location.origin.replace(/:(\d+)/, ':5000')}/directories`
-    );
+    const dirnameResp = await axios.get<string[]>(`${origin}/directories`);
     dirNames.value = dirnameResp.data;
   });
 
@@ -18,9 +17,7 @@ export function useFileSystem(
   const selectedFilename = ref<string>('');
   watch(selectedDirname, async () => {
     const filenameResp = await axios.get<string[]>(
-      `${location.origin.replace(/:(\d+)/, ':5000')}/${
-        selectedDirname.value
-      }/files`
+      `${origin}/${selectedDirname.value}/files`
     );
     filenames.value = filenameResp.data;
     selectedFilename.value = '';
@@ -36,11 +33,8 @@ export function useFileSystem(
       await navigator.clipboard.writeText(selectedFilename.value);
     }
 
-    const contentResp = await axios.get<string[][]>(
-      `${location.origin.replace(/:(\d+)/, ':5000')}/${selectedDirname.value}/${
-        selectedFilename.value
-      }`
-    );
+    let url = `${origin}/${selectedDirname.value}/${selectedFilename.value}`;
+    const contentResp = await axios.get<string[][]>(url);
     if (randomPickingInProgress.value && !contentResp.data[0].length) {
       // if random picking in progress and file does not have any value,
       // randomly select a new file
