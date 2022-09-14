@@ -232,7 +232,11 @@ const pickRandomly = () => {
                   </a>
                 </template>
                 <template
-                  v-else-if="field.endsWith('patch') || field.endsWith('input')"
+                  v-else-if="
+                    field.endsWith('patch') ||
+                    field.startsWith('diff') ||
+                    field.endsWith('input')
+                  "
                 >
                   <pre><code class='language-diff'>{{ selectedEntry[i] }}</code></pre>
                 </template>
