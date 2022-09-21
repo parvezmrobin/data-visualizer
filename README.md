@@ -18,12 +18,13 @@ yarn install
 To install python dependencies, run
 
 ```shell
-pip intall flask flask-cors
+pip intall flask flask-cors pandas
 ```
 
 ## Run The App
 
-To run the app
+To run the app, first put your files in `<dataset_dir>/<subdir>`.
+The run
 
 ```shell
 export DATASET_ROOT=<dataset_dir>
@@ -31,6 +32,7 @@ yarn serve
 ```
 
 It will run the app on http://localhost:3000.
+Here you will have the option to select appropriate `<subdir>` and the files within.
 
 ## Just Like This
 
