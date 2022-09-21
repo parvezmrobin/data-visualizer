@@ -33,7 +33,7 @@ export function useFileSystem(
       await navigator.clipboard.writeText(selectedFilename.value);
     }
 
-    let url = `${origin}/${selectedDirname.value}/${selectedFilename.value}`;
+    const url = `${origin}/${selectedDirname.value}/${selectedFilename.value}`;
     const contentResp = await axios.get<string[][]>(url);
     if (randomPickingInProgress.value && !contentResp.data[0].length) {
       // if random picking in progress and file does not have any value,
@@ -45,12 +45,22 @@ export function useFileSystem(
     fileContent.value = contentResp.data;
   });
 
+  async function updateFile() {
+    const url = `${origin}/${selectedDirname.value}/${selectedFilename.value}`;
+    try {
+      await axios.put(url, fileContent.value);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   return {
     dirNames,
     selectedDirname,
     filenames,
     selectedFilename,
     fileContent,
+    updateFile,
   };
 }
 

@@ -10,8 +10,14 @@ import {
 } from './HelloWorldComposers';
 
 const randomPickingInProgress = ref(false);
-const { dirNames, selectedDirname, filenames, selectedFilename, fileContent } =
-  useFileSystem(randomPickingInProgress, true);
+const {
+  dirNames,
+  selectedDirname,
+  filenames,
+  selectedFilename,
+  fileContent,
+  updateFile,
+} = useFileSystem(randomPickingInProgress, true);
 
 const {
   selectedFilterField,
@@ -83,6 +89,28 @@ const pickRandomly = () => {
     selectedFilterValue.value = getRandomValueFrom(values);
   }
 };
+
+const selectedEditField = ref('');
+function selectNextEntry() {
+  const idx = filterValues.value.indexOf(selectedFilterValue.value);
+  if (idx === filterValues.value.length - 1) {
+    alert(
+      'You have reached the end of the file. Consider saving the file to the server'
+    );
+    return;
+  }
+  selectedFilterValue.value = filterValues.value[idx + 1];
+}
+async function saveInServer() {
+  const ok = confirm('Are you sure to save the file in server?');
+  if (!ok) {
+    return;
+  }
+
+  await updateFile();
+
+  alert('File content updated in serve');
+}
 </script>
 
 <template>
@@ -147,58 +175,73 @@ const pickRandomly = () => {
       </div>
     </div>
 
-    <div v-show="selectedEntry.length" class="row-cols-auto">
-      <button class="btn btn-outline-info" @click="pickRandomly">
-        Pick Randomly
-      </button>
+    <div v-show="selectedEntry.length" class="row">
+      <div class="col">
+        <button class="btn btn-outline-info" @click="pickRandomly">
+          Pick Randomly
+        </button>
 
-      <div class="form-check form-check-inline mx-1">
-        <input
-          id="pick-from-random-file"
-          v-model="pickFromRandomFile"
-          class="form-check-input border-info"
-          type="checkbox"
-        />
-        <label class="form-check-label" for="pick-from-random-file">
-          From Random File
-        </label>
-      </div>
-
-      <div class="form-check form-check-inline mx-1">
-        <input
-          id="is-number"
-          v-model="isNumber"
-          name="is-number"
-          class="form-check-input border-info"
-          type="checkbox"
-        />
-        <label for="is-number" class="form-check-label">
-          With numeric condition
-        </label>
-      </div>
-
-      <div v-if="isNumber" class="d-inline-flex" style="width: 200px">
-        <div class="input-group input-group-sm">
+        <div class="form-check form-check-inline mx-1">
           <input
-            v-model="minimumFilter"
-            type="number"
-            class="form-control"
-            placeholder="Minimum"
+            id="pick-from-random-file"
+            v-model="pickFromRandomFile"
+            class="form-check-input border-info"
+            type="checkbox"
           />
-          <span class="input-group-text">≤ value ≤</span>
+          <label class="form-check-label" for="pick-from-random-file">
+            From Random File
+          </label>
+        </div>
+
+        <div class="form-check form-check-inline mx-1">
           <input
-            v-model="maximumFilter"
-            type="number"
-            class="form-control"
-            placeholder="Maximum"
+            id="is-number"
+            v-model="isNumber"
+            name="is-number"
+            class="form-check-input border-info"
+            type="checkbox"
+          />
+          <label for="is-number" class="form-check-label">
+            With numeric condition
+          </label>
+        </div>
+
+        <div v-if="isNumber" class="d-inline-flex" style="width: 200px">
+          <div class="input-group input-group-sm">
+            <input
+              v-model="minimumFilter"
+              type="number"
+              class="form-control"
+              placeholder="Minimum"
+            />
+            <span class="input-group-text">≤ value ≤</span>
+            <input
+              v-model="maximumFilter"
+              type="number"
+              class="form-control"
+              placeholder="Maximum"
+            />
+          </div>
+        </div>
+
+        <span class="badge bg-info mx-1">
+          viewed {{ entryViewCount }}
+          {{ entryViewCount > 1 ? 'entries' : 'entry' }}
+        </span>
+      </div>
+      <div v-if="selectedFilename.endsWith('.csv')" class="col-3 ms-auto">
+        <div class="">
+          <label for="field-value" class="text-black-50">
+            Select Edit Field
+          </label>
+          <VSelect
+            id="field-value"
+            v-model="selectedEditField"
+            :options="filterFields"
+            :clearable="false"
           />
         </div>
       </div>
-
-      <span class="badge bg-info mx-1">
-        viewed {{ entryViewCount }}
-        {{ entryViewCount > 1 ? 'entries' : 'entry' }}
-      </span>
     </div>
 
     <div v-if="selectedEntry.length">
@@ -216,36 +259,51 @@ const pickRandomly = () => {
                 <var>{{ field }}</var>
               </td>
               <td>
-                <template v-if="field.endsWith('sha')">
-                  <code>{{ selectedEntry[i] }}</code>
-                </template>
-                <template
+                <div v-if="field === selectedEditField" class="input-group">
+                  <input
+                    v-model="selectedEntry[i]"
+                    type="text"
+                    class="form-control"
+                  />
+                  <button class="btn btn-outline-info" @click="selectNextEntry">
+                    Next
+                  </button>
+                  <button class="btn btn-outline-warning" @click="saveInServer">
+                    Save File In Server
+                  </button>
+                </div>
+                <code v-else-if="field.endsWith('sha')">{{
+                  selectedEntry[i]
+                }}</code>
+                <code
                   v-else-if="
                     field.endsWith('filename') || field.endsWith('path')
                   "
+                  >{{ selectedEntry[i] }}</code
                 >
-                  <code>{{ selectedEntry[i] }}</code>
-                </template>
-                <template v-else-if="field.endsWith('url')">
-                  <a :href="selectedEntry[i]" target="_blank">
-                    {{ selectedEntry[i] }}
-                  </a>
-                </template>
-                <template
+                <a
+                  v-else-if="field.endsWith('url')"
+                  :href="selectedEntry[i]"
+                  target="_blank"
+                >
+                  {{ selectedEntry[i] }}
+                </a>
+
+                <pre
                   v-else-if="
                     field.endsWith('patch') ||
                     field.startsWith('diff') ||
                     field.endsWith('input')
                   "
                 >
-                  <pre><code class='language-diff'>{{ selectedEntry[i] }}</code></pre>
-                </template>
-                <template v-else-if="field.endsWith('content')">
-                  <pre><code class='language-python'>{{ selectedEntry[i] }}</code></pre>
-                </template>
-                <template v-else-if="selectedEntry[i]?.includes('{')">
-                  <pre><code class='language-json'>{{ selectedEntry[i] }}</code></pre>
-                </template>
+                  <code class='language-diff'>{{ selectedEntry[i] }}</code>
+                </pre>
+                <pre
+                  v-else-if="field.endsWith('content')"
+                ><code class='language-python'>{{ selectedEntry[i] }}</code></pre>
+                <pre
+                  v-else-if="selectedEntry[i]?.includes('{')"
+                ><code class='language-json'>{{ selectedEntry[i] }}</code></pre>
                 <template v-else>
                   {{ selectedEntry[i] }}
                 </template>

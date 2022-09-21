@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, jsonify
+import pandas as pd
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pandas.io.parsers.readers import read_csv
 from pandas.io.pickle import read_pickle
@@ -27,7 +28,7 @@ def get_filenames(directory: str):
   return jsonify(filenames)
 
 
-@app.route('/<directory>/<filename>')
+@app.route('/<directory>/<filename>', methods=['GET'])
 def get_file(directory: str, filename: str):
   filepath = os.path.join(DATASET_DIR, directory, filename)
   if filepath.endswith('.pkl') or filepath.endswith('.pkl.gz'):
@@ -41,3 +42,13 @@ def get_file(directory: str, filename: str):
     *df.values.tolist(),
   ]
   return jsonify(list_of_rows)
+
+
+@app.route('/<directory>/<filename>', methods=['PUT'])
+def update_file(directory: str, filename: str):
+  file_content = request.json
+  df = pd.DataFrame(file_content[1:], columns=file_content[0])
+  filepath = os.path.join(DATASET_DIR, directory, filename)
+  df.to_csv(filepath, index=False)
+
+  return jsonify(success=True)
