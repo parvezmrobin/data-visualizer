@@ -277,7 +277,9 @@ async function saveInServer() {
                 }}</code>
                 <code
                   v-else-if="
-                    field.endsWith('filename') || field.endsWith('path')
+                    field.endsWith('filename') ||
+                    field.endsWith('path') ||
+                    field == 'context'
                   "
                   >{{ selectedEntry[i] }}</code
                 >
