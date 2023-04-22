@@ -302,7 +302,10 @@ async function saveInServer() {
                   v-else-if="field.endsWith('content')"
                 ><code class='language-python'>{{ selectedEntry[i] }}</code></pre>
                 <pre
-                  v-else-if="selectedEntry[i]?.includes('{')"
+                  v-else-if="
+                    selectedEntry[i]?.startsWith('{') ||
+                    selectedEntry[i]?.startsWith('[')
+                  "
                 ><code class='language-json'>{{ selectedEntry[i] }}</code></pre>
                 <template v-else>
                   {{ selectedEntry[i] }}
