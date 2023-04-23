@@ -132,7 +132,6 @@ async function saveInServer() {
           v-model="selectedFilename"
           :options="filenames"
           :clearable="false"
-          :get-option-label="(filename) => filename.replace('.', '/')"
         />
       </div>
       <div class="col">
