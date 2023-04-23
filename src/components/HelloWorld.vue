@@ -276,9 +276,7 @@ async function saveInServer() {
                 }}</code>
                 <code
                   v-else-if="
-                    field.endsWith('filename') ||
-                    field.endsWith('path') ||
-                    field == 'context'
+                    field.endsWith('filename') || field.endsWith('path')
                   "
                   >{{ selectedEntry[i] }}</code
                 >
@@ -300,7 +298,7 @@ async function saveInServer() {
                   <code class='language-diff'>{{ selectedEntry[i] }}</code>
                 </pre>
                 <pre
-                  v-else-if="field.endsWith('content')"
+                  v-else-if="field.endsWith('content') || field == 'context'"
                 ><code class='language-python'>{{ selectedEntry[i] }}</code></pre>
                 <pre
                   v-else-if="
