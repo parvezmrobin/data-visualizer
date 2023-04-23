@@ -316,6 +316,15 @@ async function saveInServer() {
       </table>
     </div>
   </div>
+
+  <button
+    v-if="!selectedEditField"
+    class="btn btn-outline-info position-fixed"
+    style="right: 10px; bottom: 10px"
+    @click="selectNextEntry"
+  >
+    Next
+  </button>
 </template>
 
 <style>
